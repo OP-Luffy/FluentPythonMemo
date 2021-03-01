@@ -27,6 +27,9 @@ def target_func_call():
     print('running target_func_call')
 
 target_func_call = deco(target_func_call)
+# Function decorators let us “mark” functions in the source code to enhance their behavior in some way.
+# target_func_call(装饰后的) = deco(target_func_call(未装饰的))
+# 装饰前后的函数是同名函数
 
 target_func_call()
 # running inner() 
