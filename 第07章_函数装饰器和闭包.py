@@ -124,4 +124,74 @@ f3(3) # 输出 3, 9
 
 
 
+# ====================================================================================
+# 7.5　  闭包
+# ====================================================================================
+# ! 0006 :  a 只有涉及嵌套函数时才有闭包问题
+# !         b 闭包: 指延伸了作用域的函数
+# !                 函数定义体中 引用了 不在定义体中定义的非全局变量
 
+
+# ---------------- 示例 7-8 : 计算移动平均值(通过 类 实现)
+class Averager():
+
+    def __init__(self):
+        self.series = []
+    
+    def __call__(self, new_value):
+        self.series.append(new_value)
+        total = sum(self.series)
+        return total/len(self.series)
+
+avg_obj = Averager()
+print(avg_obj(10), avg_obj(11), avg_obj(12))
+
+# ---------------- 示例 7-9 : 计算移动平均值(通过 高阶函数 实现)
+def make_averager():
+    # ------------------------- 闭包
+    series = []
+    
+    def averager(new_value):         # ! 0007  局部变量 ≠ 自由变量
+        series.append(new_value)     # !       a. series 是 自由变量(free variable): 指未在本地作用域中绑定的变量 (avg.__code__.co_freevars)
+        total = sum(series)          # !       b. new_value 和 total 都是局部变量 (avg.__code__.co_varnames)
+        return total/len(series)     # !       c. 如果这里的series一旦赋值,则它就变成了局部变量
+    return averager
+    # ------------------------- 闭包 # !       e. 可以通过nonlocal关键字把一个变量标记为自由变量
+
+avg_fun = make_averager()
+print(avg_fun(10), avg_fun(11), avg_fun(12))
+
+# 这两个示例有共通之处： (1) 调用Averager() 或make_averager() 得到一个可调用对象avg
+#                       (2) 它会更新历史值，
+#                       (3) 计算当前均值
+
+# ---------------- 示例 7-13 : 计算移动平均值的高阶函数,不保存所有历史值,但有Bug
+def make_averager_bad():
+    count = 0
+    total = 0
+
+    def averager(new_value):
+        count += 1              #! mem 0008:  对count和total赋值了, 则它们都变成了局部变量
+        total += new_value      #!       示例7-9 没遇到这个问题，因为我们没有给series赋值,我们只是调用series.append
+        return total/count
+    return averager
+
+# avg_bad = make_averager_bad()
+# print(avg_bad(10), avg_bad(11), avg_bad(12))
+# UnboundLocalError: local variable 'count' referenced before assignment
+
+
+# ---------------- 示例 7-14 : 计算移动平均值, 不保存所有历史, 使用 nonlocal 修正 7-13的Bug
+
+def make_averager_good():
+    count = 0
+    total = 0
+    def averager(new_value):
+        nonlocal count, total
+        count += 1
+        total += new_value
+        return total/count
+    return averager           #! mem 0010: 这里返回的 是averager, 不是 averager(), 没有执行哦
+
+avg_good = make_averager_good()
+print(avg_good(10), avg_good(11), avg_good(12))
