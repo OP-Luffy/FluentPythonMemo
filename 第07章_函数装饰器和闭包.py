@@ -7,7 +7,7 @@ def deco(func):
     return inner
 
 # ! ------------------------------------
-# ! 0001. 通过 语法糖 来施加 装饰器
+# ! mem 0001. 通过 语法糖 来施加 装饰器
 # ! ------------------------------------
 
 @deco
@@ -20,7 +20,7 @@ target_sugar()
 # 但 在装饰器的定义中, 装饰器无论装饰谁, 返回的都是 inner
 
 # ! ------------------------------------
-# ! 0002. 通过 函数调用 来施加 装饰器
+# ! mem 0002. 通过 函数调用 来施加 装饰器
 # ! ------------------------------------
 
 def target_func_call():
@@ -39,9 +39,9 @@ target_func_call()
 # ====================================================================================
 # 7.2   Python何时执行装饰器
 # ====================================================================================
-# ! 0003 a 装饰器 在加载模块时 立即执行
-# !      b 装饰器的一个关键特性是，它们在被装饰的函数定义之后 立即运行。 这通常是在 导入时(即 加载模块时)
-# !      c 注册装饰器(register)原封不动地返回被装饰的函数，但是这种技术并非没有用处.
+# ! mem 0003 a 装饰器 在加载模块时 立即执行
+# !          b 装饰器的一个关键特性是，它们在被装饰的函数定义之后 立即运行。 这通常是在 导入时(即 加载模块时)
+# !          c 注册装饰器(register)原封不动地返回被装饰的函数，但是这种技术并非没有用处.
 
 registry = []
 def register(func):
@@ -117,9 +117,9 @@ def f3(a):
     c = 9 
 f3(3) # 输出 3, 6
 f3(3) # 输出 3, 9
-# ! 0005 : a 即使在函数的 定义体中 给c赋值了, 
-# !          但早已声明c乃全局变量
-# !          故c是全局变量, 在定义体中 给c 赋值, 修改了的是全局变量c
+# ! mem 0005 : a 即使在函数的 定义体中 给c赋值了, 
+# !              但早已声明c乃全局变量
+# !              故c是全局变量, 在定义体中 给c 赋值, 修改了的是全局变量c
 
 
 
@@ -127,9 +127,9 @@ f3(3) # 输出 3, 9
 # ====================================================================================
 # 7.5　  闭包
 # ====================================================================================
-# ! 0006 :  a 只有涉及嵌套函数时才有闭包问题
-# !         b 闭包: 指延伸了作用域的函数
-# !                 函数定义体中 引用了 不在定义体中定义的非全局变量
+# ! mem 0006 :  a 只有涉及嵌套函数时才有闭包问题
+# !             b 闭包: 指延伸了作用域的函数
+# !                     函数定义体中 引用了 不在定义体中定义的非全局变量
 
 
 # ---------------- 示例 7-8 : 计算移动平均值(通过 类 实现)
@@ -195,3 +195,83 @@ def make_averager_good():
 
 avg_good = make_averager_good()
 print(avg_good(10), avg_good(11), avg_good(12))
+
+# ====================================================================================
+# 7.7　  实现一个简单的装饰器
+# ====================================================================================
+# ! mem 0011 老式的 % 字符串格式化: a. 以小数点为界, 
+# !                                b. 前面: 对齐方式(-,0,+,空格) + 数据宽度; 
+# !                                c. 后面: 精度(小数点后保留几位小数)
+print('%09.3f'  % 1.234 ) #    0:补, 9:宽度, .:界限, 3:精度 
+print('%09.3f'  % -12.34) # 空格:正数加个空格,从而与负数对齐
+print('% 9.3f'  % -12.34) # 空格:正数加个空格,从而与负数对齐
+
+import time
+
+def clock_naive(func):               #! memo 0012 分清装饰器的参数和原函数的参数: a. 装饰器本身是个函数, 其参数为被装饰函数的函数名称
+    def fake_func(*args):      #!                                          b. 原函数的参数 不受影响
+        t0 = time.perf_counter() # perf: performance 返回性能计数器的值（以小数秒为单位）作为浮点数，即具有最高可用分辨率的时钟
+        result = func(*args)                                                #! 原函数功能
+        elapsed = time.perf_counter() - t0                                  #! 增强
+        name = func.__name__                                                #! 增强
+        arg_str = ', '.join(repr(arg) for arg in args)                      #! 增强
+        print( '[%0.8fs] %s(%s) -> %r' % (elapsed, name, arg_str, result))  #! 增强 : [] 中括号; s:表示second 函数名(输入) -> 输出
+        return result                                                       #! 原函数功能
+    return fake_func
+
+
+def snooze(seconds):
+    time.sleep(seconds)
+snooze = clock_naive(snooze)
+
+@clock_naive
+def factorial(n):
+    return 1 if n < 2 else n * factorial(n - 1)
+
+print('*' * 40, 'Calling snooze(0.123)')
+snooze(0.123)
+print('*' * 40, 'Calling factorial(6)' )
+print('6! = ', factorial(6))
+
+print(factorial.__name__)
+# 输出 fake_func
+
+#! memo 0013 a. 函数factorial被修饰后,虽然名称没变,但其实它实际上是对修饰后函数(fake_factorial)的引用
+#!           b. 装饰器的典型行为:
+#!              b1. 把 被装饰函数 替换成 新函数
+#!              b2. 二者接受相同的参数
+#!              b3. 通常返回被装饰函数 本该 返回的值
+#!              b4. 增加一些额外操作
+
+
+#! memo 0014 clock_naive 装饰器有几个缺点：
+#!                                      1. 不支持关键字参数
+#!                                      2. 遮盖了原函数的__name__ 和__doc__ 属性
+#! memo 0015 使用functool.wraps装饰器:
+#!                                      1. 把原函数(func)的相关属性复制到 fake_func 中
+#!                                      2. 正确处理 关键字参数
+import time
+import functools
+
+def my_wrap(func):
+    @functools.wraps(func)              #! memo 0016 在哪里使用 functool.wraps 装饰器 ?
+    def fake_func(*args, **kwargs):     #!           再次强调: 装饰器 是一个 函数
+        t0 = time.time()                #!           在自定义装饰器函数(my_wrap)的第一行
+        result = func(*args, **kwargs)
+        elapsed = time.time() - t0
+        funcname = func.__name__
+        arg_lst = []
+        if args:
+            arg_lst.append(', '.join(repr(arg) for arg in args))
+        if kwargs:
+            pairs = ['%s = %r' % (k, w) for k, w in sorted(kwargs.items())]
+            arg_lst.append(', '.join(pairs))
+        arg_str = ', '.join(arg_lst)
+        print('[%0.8fs] %s(%s) -> %r' % (elapsed, funcname, arg_str, result))
+        return result
+    return fake_func
+
+
+        
+
+
