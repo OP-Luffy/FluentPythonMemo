@@ -271,7 +271,99 @@ def my_wrap(func):
         return result
     return fake_func
 
-
+# ====================================================================================
+# 7.8　 标准库中的装饰器
+# ====================================================================================
         
+# ! memo 0017   使用functools.lru_cache() (函数缓冲装饰器) 做备忘
+# !             1 函数工具箱中的 装饰器, 来优化函数
+# !             2 装饰器 都是 函数装饰器, 都是用来装饰函数, 以增强函数功能的
+# !             3 它把 耗时的函数的结果 保存起来，避免 相同的参数时 重复计算
+# !             4 lru = “Least Recently Used"
+
+# ---------------- 示例 7-18:　生成第n个斐波纳契数，递归方式非常耗时(相同的入参,反复计算)
+def clock(func):
+    @functools.wraps(func)              
+    def fake_func(*args, **kwargs):    
+        t0 = time.time()               
+        result = func(*args, **kwargs)
+        elapsed = time.time() - t0
+        funcname = func.__name__
+        arg_lst = []
+        if args:
+            arg_lst.append(', '.join(repr(arg) for arg in args))
+        if kwargs:
+            pairs = ['%s = %r' % (k, w) for k, w in sorted(kwargs.items())]
+            arg_lst.append(', '.join(pairs))
+        arg_str = ', '.join(arg_lst)
+        print('[%0.8fs] %s(%s) -> %r' % (elapsed, funcname, arg_str, result))
+        return result
+    return fake_func
+@clock
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-2) + fibonacci(n-1)
+
+print('---------------- out 7-18 ----------------')
+print(fibonacci(6))
+
+# ---------------- 示例 7-19　使用缓存实现，速度更快
+import functools
+
+@functools.lru_cache()
+@clock 
+                 # 这里叠放了两个装饰器
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-2) + fibonacci(n-1)
+print('---------------- out 7-19 ----------------')
+print(fibonacci(6))
+
+# ! memo 0019   functools.lru_cache(maxsize=128, typed=False) 的入参:
+# !             a. maxsize
+# !                1 maxsize 参数指定存储多少个调用的结果
+# !                2 缓存满了之后,旧的结果会被扔掉,腾出空间
+# !                3 为了得到最佳性能，maxsize 应该设为2 的幂。
+# !             b. typed
+# !                1 是否把不同参数类型得到的结果分开保存
+# !                2 即把通常认为相等的浮点数和整数参数（如1 和1.0）区分开
+# !             c. 哪些函数可以利用这个缓冲装饰器来提高性能?
+# !                1 因为 lru_cache 使用字典存储结果, 字典key由函数入参(位置或关键字入参)生成
+# !                2 所以 只有函数的入参是 可散列 的时, 才能使用缓冲装饰器来装饰以提高性能
+
+# ! memo 0020 可散列
+'''
+1. 不严谨但易懂的解释：
+
+   一个对象在其生命周期内，如果保持不变，就是hashable（可哈希的）。
+
+   hashable ≈ imutable , 可哈希 ≈ 不可变
+
+   在Python中：
+
+   list、set和dictionary 都是可改变的，
+   比如可以通过list.append()，set.remove()，dict['key'] = value对其进行修改，
+   所以它们都是不可哈希的；
+
+   而tuple和string是不可变的，只可以做复制或者切片等操作，所以它们就是可哈希的。
+
+
+2. 较严格的解释:
+
+   如果一个对象在其生命周期内，其哈希值从未改变(这需要一个__hash__()方法)，
+   并且可以与其他对象进行比较(这需要一个__eq__()或__cmp__()方法)，
+   那么这个对象就是可哈希的。
+   哈希对象的相等意味着其哈希值的相等。
+
+   可哈希性的对象可以用作dictionary键和set元素，因为这些数据结构在内部使用了哈希值。
+
+参见:详解Python中的可哈希对象与不可哈希对象(一)(二).pdf
+'''
+
+print(hash((1, 2, (3,4))))
+# print(hash((1, 2, [3,4]))) #输出: TypeError: unhashable type: 'list'
+
 
 
