@@ -48,6 +48,8 @@ def register(func):
     print('running register(%s)' % func)
     registry.append(func)
     return func # 注册装饰器(register)原封不动地返回被修饰函数(func)
+                # 装饰器 并没有 把被装饰的函数 变成 另一个函数，装饰的是func，返回的还是func
+	            # 被装饰后的函数仍然指向的是原函数的引用，而不是返回指向一个fake_func
 
 def f1():
     print('running f1()')
@@ -63,9 +65,9 @@ def f3():
 def main():
     print('running main()')
     print('registry ->', registry)
-    f1()
-    f2()
-    f3()
+    f1() # 此语句执行，就仅仅是在执行f1，
+    f2() #           不会执行 ： print('running register(%s)' % func)
+    f3() #                     registry.append(func)
 if __name__ == '__main__':
     main()
 
@@ -367,3 +369,36 @@ print(hash((1, 2, (3,4))))
 
 
 
+
+# ---------------- 示例 7-18:　生成第n个斐波纳契数，递归方式非常耗时(相同的入参,反复计算)
+
+registry = set()
+
+def register(active=True):
+	def decorate(func):
+		print('running register(active=%s)-->decorate(%s)' %(active,func))
+		if active:
+			registry.add(func) 
+		else:
+			registry.discard(func)
+		return func    	# 立马返回原函数
+	return decorate 	#	返回装饰器，装饰器会做什么？先根据入参决定是否注册，再返回原函数
+
+
+@register(active=False) 
+def f1():
+	print('running f1()')
+
+@register()
+def f2():
+	print('running f2()')
+
+def f3():
+	print('running f3()')
+
+print('---------------- out 7-23 ----------------')
+print('running main()') 
+print('registry ->',registry) 
+f1() # 此语句执行，就仅仅是在执行f1，
+f2() #           不会执行 ： print('running register(%s)' % func)
+f3() #                     registry.append(func)
