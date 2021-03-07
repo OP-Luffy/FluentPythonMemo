@@ -367,8 +367,155 @@ print(fibonacci(6))
 print(hash((1, 2, (3,4))))
 # print(hash((1, 2, [3,4]))) #输出: TypeError: unhashable type: 'list'
 
+# ====================================================================================
+# 7.8.2　单分派 泛函数
+# ====================================================================================
+
+'''
+--------------------------------------------------------------
+def process(data):
+    if cond0 and cond1:
+        # apply func01 on data that satisfies the cond0 & cond1
+        return func01(data)
+    elif  cond2 and cond3:
+        # apply func23 on data that satisfies the cond2 & cond3
+        return func23(data)
+    elif  cond4 and cond5:
+        # apply func45 on data that satisfies the cond4 & cond5
+        return func45(data)
+----------------------------------------------------------------
+   This pattern gets tedious when the number of conditions and actionable functions
+start to grow. I was looking for a functional approach to avoid deﬁning and calling
+three diﬀerent functions that do very similar things. Situations like this is where
+parametric polymorphism comes into play. The idea is, you have to deﬁne a single
+function that will be dynamically overloaded with alternative implementations based
+on the type of the function arguments.
+
+    Function overloading is a speciﬁc type of polymorphism where multiple functions
+can have the same name with diﬀerent implementations. Calling an overloaded
+function will run a speciﬁc implementation of that function based on some prior
+conditions or appropriate context of the call. When function overloading happens
+based on its argument types, the resulting function is known as generic function.
+Let’s see how Python’s  singledispatch  decorator can help to design generic
+functions and refactor the icky code above. 
+'''
+
+# ---------------- Example-1: 用 if/elif+多个类似的函数名 实现 内置类型 的多态处理
+
+def process_with_if(num):
+    if isinstance(num, int):
+        return process_int(num)
+    elif isinstance(num, float):
+        return process_float(num)
+
+def process_int(num):
+    return(f"Integer number {num} has been processed successfully!")
+
+def process_float(num):
+    return(f"Float number {num} has been processed successfully!")
+
+print('---------------- out 多态 例-1: if/elif 实现 ----------------')
+print(process_with_if(12))
+print(process_with_if(12.1))
+# 输出
+# Integer number 12 has been processed successfully!
+# Float number 12.1 has been processed successfully!
+
+# ---------------- Example-2: 用 Singledispatch 来多态地处理 内置类型
+from functools import singledispatch
+
+@singledispatch
+def process_num(num=None):
+    raise NotImplementedError("Implement function process ")
+
+@process_num.register(int)
+def _(num):
+    return(f"Integer number {num} has been processed successfully!")
+
+@process_num.register(float)
+def _(num):
+    return(f"Float number {num} has been processed successfully!")
 
 
+print('---------------- out 多态 例-2: @Singledispatch 实现 ----------------')
+print(process_num(12))
+print(process_num(12.1))
+# print(process_num('12'))
+# NotImplementedError: Implement function process 
+
+# 输出
+# Integer number 12 has been processed successfully!
+# Float number 12.1 has been processed successfully!
+
+# ---------------- Example-3: Singledispatch with custom argument type
+def process_pet_with_if(data: dict):
+    if data["genus"] == "Felis" and data["bucket"] == "cat":
+        return process_cat(data)
+    elif data["genus"] == "Canis" and data["bucket"] == "dog":
+        return process_dog(data)
+def process_cat(data: dict):
+    # processing cat
+    return "Cat data has been processed successfully!"
+def process_dog(data: dict):
+    # processing dog
+    return "Dog data has been processed successfully!"
+
+if __name__ == "__main__":
+    cat_data = {"genus": "Felis", "species": "catus", "bucket": "cat"}
+    dog_data = {"genus": "Canis", "species": "familiaris", "bucket": "dog"}
+    # using process
+    print('---------------- Example-3: Singledispatch + custom type')
+    print(process_pet_with_if(cat_data))
+    print(process_pet_with_if(dog_data))
+
+#  输出 
+# >>> Cat data has been processed successfully!
+# >>> Dog data has been processed successfully!
+
+# ---------------- Example-4: Singledispatch + custom type + dataclass
+from functools import singledispatch
+from dataclasses import dataclass
+@dataclass
+class Cat:
+    genus: str
+    species: str
+@dataclass
+class Dog:
+    genus: str
+    species: str
+@singledispatch
+def process(obj=None):
+    raise NotImplementedError("Implement process for bucket")
+@process.register(Cat)
+def sub_process(obj):
+    # processing cat
+    return "Cat data has been processed successfully!"
+@process.register(Dog)
+def sub_process(obj):
+    # processing dog
+    return "Dog data has been processed successfully!"
+if __name__ == "__main__":
+    cat_obj = Cat(genus="Felis", species="catus")
+    dog_obj = Dog(genus="Canis", species="familiaris")
+    print('---------------- Example-4: Singledispatch + custom type + dataclass')
+    print(process(cat_obj))
+    print(process(dog_obj))
+
+
+
+
+
+
+
+
+
+
+
+
+# ====================================================================================
+# 7.10　  参数化装饰器
+# 7.10.1　一个参数化的注册装饰器
+# ====================================================================================
 
 # ---------------- 示例 7-18:　生成第n个斐波纳契数，递归方式非常耗时(相同的入参,反复计算)
 
@@ -382,7 +529,7 @@ def register(active=True):
 		else:
 			registry.discard(func)
 		return func    	# 立马返回原函数
-	return decorate 	#	返回装饰器，装饰器会做什么？先根据入参决定是否注册，再返回原函数
+	return decorate 	# 返回装饰器. 装饰器会做什么？先根据入参决定是否注册，再返回原函数
 
 
 @register(active=False) 
@@ -399,6 +546,10 @@ def f3():
 print('---------------- out 7-23 ----------------')
 print('running main()') 
 print('registry ->',registry) 
-f1() # 此语句执行，就仅仅是在执行f1，
-f2() #           不会执行 ： print('running register(%s)' % func)
-f3() #                     registry.append(func)
+f1() # 此语句执行, 仅仅是在执行f1.
+f2() #            不会执行: print('running register(%s)' % func)
+f3() #                      registry.append(func)
+
+# ====================================================================================
+# 7.10.2　参数化clock装饰器
+# ====================================================================================
