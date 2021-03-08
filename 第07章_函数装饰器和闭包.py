@@ -504,14 +504,6 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-
-
-
 # ====================================================================================
 # 7.10　  参数化装饰器
 # 7.10.1　一个参数化的注册装饰器
@@ -553,3 +545,49 @@ f3() #                      registry.append(func)
 # ====================================================================================
 # 7.10.2　参数化clock装饰器
 # ====================================================================================
+
+# -------------- 示例 7-25　clockdeco_param.py 模块：参数化 clock 装饰器
+print('---------------- 7-25 deco_par with default par ----------------')
+import time
+
+DEFAULT_FMT = '[{elapsed:0.8f} seconds] {name}({args}) -> {result}'
+
+def AddPar2Decoate(par = DEFAULT_FMT):
+    def decorate(func): # decorate(func, par)
+        # print(par)
+        def fakeFunc(*_args):
+            t0 = time.time()
+            _result = func(*_args)
+            elapsed = time.time() - t0
+            name = func.__name__
+            args = ', '.join(repr(arg) for arg in _args)
+            result = repr(_result)
+            print(par.format(**locals())) # fmt.format( name = func实参, args = _args实参, ...)
+            return _result
+        return fakeFunc
+    return decorate
+# ! memo 0021 : 掌握两层和三层的一般就足够了
+# ! 一般装饰器是两层嵌套函数,带参数的装饰器又多了一层来传递par
+
+
+@AddPar2Decoate() # ! memo 0022 我第一次丢了括号,写成了 @AddPar2Decoate, 结果没有输出任何东东
+def snooze(seconds):
+    time.sleep(seconds)
+for i in range(3):
+    snooze(.123)
+
+
+
+print('---------------- 7-26 deco_par with user par ----------------')
+@AddPar2Decoate('{name} : {elapsed}  s') # ! memo 0022 我第一次丢了括号,写成了 @AddPar2Decoate, 结果没有输出任何东东
+def snooze(seconds):
+    time.sleep(seconds)
+for i in range(3):
+    snooze(.123)
+
+print('---------------- 7-27 deco_par with user par ----------------')
+@AddPar2Decoate('{name}({args})  dt = {elapsed:0.3f}s') # ! memo 0022 我第一次丢了括号,写成了 @AddPar2Decoate, 结果没有输出任何东东
+def snooze(seconds):
+    time.sleep(seconds)
+for i in range(3):
+    snooze(.123)
