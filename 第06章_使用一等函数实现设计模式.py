@@ -103,5 +103,5 @@ print('------------ 示例 6-2 使用不同促销折扣的 Order 类示例   ---
 joe = Customer('John Doe', 0)
 ann = Customer('Ann Smith', 1100)
 cart = [Item('banana', 4, .5), Item('apple', 10, 1.5), Item('watermelon', 5, 5.0)]
-Order(joe, cart, FidelityPromo())
+
 print(Order(joe, cart, FidelityPromo()))
