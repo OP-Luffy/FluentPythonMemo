@@ -45,4 +45,4 @@ class Order: # 订单(顾客, 购物车, 折扣策略)
         fmt = '<Order total: {:.2f} due : {:.2f}'
         return fmt.format(self.total(), self.due())
 
-class 
+# class 
