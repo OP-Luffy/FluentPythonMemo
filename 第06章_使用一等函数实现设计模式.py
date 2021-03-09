@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*
 #  用 函数对象 代替 设计模式中类的实例
 
 # ! memo 0002 订单(order)的实例化
@@ -80,7 +81,7 @@ class BulkItemPromo(Promotion):
     """ 
     单个商品数量 >= 20 提供10%折扣 
     注意: 这种折扣可以累加. 如果商品A数量超过20了, 则打折10%, 如果商品B数量超过20了, 则打折10%, 这样总折扣应为 20% 
-    """"
+    """
     def discount(self, order):
         discount = 0
         for item in order.cart:
@@ -96,4 +97,11 @@ class LargeOrderPromo(Promotion):
             return order.total() * 0.07
         return 0
 
+print('------------ 示例 6-1 实现 Order 类，支持插入式折扣策略 --------------')
+print('------------ 示例 6-2 使用不同促销折扣的 Order 类示例   --------------')
 
+joe = Customer('John Doe', 0)
+ann = Customer('Ann Smith', 1100)
+cart = [Item('banana', 4, .5), Item('apple', 10, 1.5), Item('watermelon', 5, 5.0)]
+Order(joe, cart, FidelityPromo())
+print(Order(joe, cart, FidelityPromo()))
