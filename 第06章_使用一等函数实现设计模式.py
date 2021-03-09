@@ -77,7 +77,10 @@ class FidelityPromo(Promotion):
         return order.total() * 0.5 if order.customer.fidelity >= 1000 else 0
 
 class BulkItemPromo(Promotion):
-    """ 单个商品数量 >= 20 提供10%折扣 """
+    """ 
+    单个商品数量 >= 20 提供10%折扣 
+    注意: 这种折扣可以累加. 如果商品A数量超过20了, 则打折10%, 如果商品B数量超过20了, 则打折10%, 这样总折扣应为 20% 
+    """"
     def discount(self, order):
         discount = 0
         for item in order.cart:
