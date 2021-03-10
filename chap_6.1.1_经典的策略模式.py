@@ -51,15 +51,15 @@ class Order:
                                      # !           即使只有一个 item
     
     def total(self):
-        if not hasattr(self, '__total'):
-            self.__total = sum(item.total() for item in self.cart)
-        return self.__total
+        if not hasattr(self, '__total'):                            # ! memo 0009 如果一个订单的总价 __total还没有计算,
+            self.__total = sum(item.total() for item in self.cart)  # !           则订单的total这个方法会累加各个item.total()计算
+        return self.__total                                         # !           如果订单具有总价 __total 塑性, 说明算过了, 直接返回即可
     
     def due(self):
         if self.promotion is None:
             discount = 0
         else:
-            discount = self.promotion.discount(self) #! memo 0009 此处订单中 promotion.discount(self)   
+            discount = self.promotion.discount(self) #! memo 0010 此处订单中 promotion.discount(self)   
         return self.total() - discount               #!           呼应 Promotion(self, order), 
                                                      #!                discount(order)
     
