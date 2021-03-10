@@ -1,6 +1,9 @@
-#!/usr/bin/env python3
+
 # -*- coding: utf-8 -*
-#  用 函数对象 代替 设计模式中类的实例
+#  用 函数对象 代替 设计模式中类的实例 #!/usr/bin/env python3
+# ! memo 0001 mac下 如果 不 在第一行指定 #!/usr/bin/env python3, 则会出 Import Error; cannot import name abc
+# !           但是windows下, 如果有了这一句, 则会在vscode的output窗口中显示乱码(即使拟显示的是英文)
+
 
 # ! memo 0002 订单(order)的实例化
 # !           首先, 实例化 Order 之前, 系统会议某种方式选择一种促销策略
@@ -105,3 +108,11 @@ ann = Customer('Ann Smith', 1100)
 cart = [Item('banana', 4, .5), Item('apple', 10, 1.5), Item('watermelon', 5, 5.0)]
 
 print(Order(joe, cart, FidelityPromo()))
+print(Order(ann, cart, FidelityPromo()))
+
+bulk_item_cart = [Item('banana', 30, .5), Item('apple', 10, 1.5)]
+print(Order(joe, bulk_item_cart, BulkItemPromo()))
+
+long_order_cart = [Item(str(item_code), 1, 1.0) for item_code in range(10)]
+print(Order(joe, long_order_cart, LargeOrderPromo()))
+
