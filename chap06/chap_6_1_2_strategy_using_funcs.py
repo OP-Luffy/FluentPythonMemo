@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*
+
 # chap_6_1_2_strategy_using_funcs.py
 # ! memo 0001 只有方法的类 ---> 函数
 '''
