@@ -1,4 +1,6 @@
-import chap_6_1_2_使用函数实现策略模式
+# from chap6 import *
+import chap6
+
 promos = [fidelity_promo, bulk_item_promo, large_order_promo]
 
 def best_promo(order):
@@ -7,4 +9,4 @@ def best_promo(order):
     """
     return max(promo(order) for promo in promos)
 
-
+print(Order(joe, long_order_cart, best_promo))
