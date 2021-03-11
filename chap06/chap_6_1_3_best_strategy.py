@@ -1,5 +1,5 @@
-# from chap6 import *
-import chap6
+# from chap_6_1_2_strategy_using_funcs import *
+# import chap6 错误
 
 promos = [fidelity_promo, bulk_item_promo, large_order_promo]
 
